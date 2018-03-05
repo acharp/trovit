@@ -31,7 +31,7 @@ So everything works well, we end up with 851714 unique rows.
 ## Q2: getting insights algorithm
 We start by creating a temporary baseline table which contains the average year, price and mileage for each pair `(make, model)`.  
 Then we compare each classified ad from dedup_data to its matching baseline row by joining on `(make, model)`. And for each criteria (year, price and mileage) the classified ad gets attributed a 1 or 0.  
-Finally we some these scores in a final insights table telling us if the classified ad is a (Bad, Average, Interesting or Good) deal.  
+Finally we sum these scores in a final insights table telling us if the classified ad is a (Bad, Average, Interesting or Good) deal.  
 The baseline and scoring tables are temporary tables but if the dataset would grow big and we would be in need of better performance, we could just persist those tables and design them in a way that would fasten the joins. As the current dataset is quite small and the job is running in a few seconds, there was no need to do that.
 
 
