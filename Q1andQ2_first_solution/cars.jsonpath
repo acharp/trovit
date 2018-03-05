@@ -1,0 +1,22 @@
+{
+    "jsonpaths": [
+        "$['city']",
+        "$['contentChunk']",
+        "$['country']",
+        "$['date']",
+        "$['make']",
+        "$['mileage']",
+        "$['model']",
+        "$['price']",
+        "$['region']",
+        "$['titleChunk']",
+        "$['uniqueId']",
+        "$['urlAnonymized']",
+        "$['year']",
+        "$['doors']",
+        "$['fuel']",
+        "$['carType']",
+        "$['transmission']",
+        "$['color']"
+    ]
+}
