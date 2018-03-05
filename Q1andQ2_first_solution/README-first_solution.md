@@ -1,18 +1,19 @@
 # Sort deals in cars classified ads
 
-The solution implemented aims to assess the quality of the offers for each classified ads in regard to help the users make their mind.
+The solution implemented aims to assess the quality of the offers for each classified ads in regard to help the users making their mind.
 
 It is designed to run in an Amazon Web Service cloud using the following services:
 * S3 : object storage to persist the input and output files
 * Redshift : distributed database to run our ETLs
 * Lambda funtion : serverless environment hosting the python code to format our final final result and output them
 
-Being a massive parallel processing engine, Redshift is particularly efficient to move important amount of data as we are doing here. The big downside is that it forces us to write our code in SQL, a language in which it is tricky to implement complex logic and that can become very verbose. 
+Being a massive parallel processing engine, Redshift is particularly efficient to move important amount of data as we are doing here. The big downside is that it forces us to write our code in SQL, a language in which it is tricky to implement complex logic and that can quickly become very verbose. 
 
 ## The project
 ![alt text](cars-pipeline.png "Pipeline architecture")
-* `init_db.sql` initializes the database and ingest the dataset from aws s3 to the raw_data table.   
-We choose the distribution key and sort keys that will improve the performance of the windowing function in  our `deduplicate.sql` and the different joins that will happen all along the process. The goal of this database design is both, to avoid moving data all over the cluster, and triggering "MERGE JOINS" which are the most performant joins Redshift can do.
+* `init_db.sql` initialises the database and ingests the dataset from S3 to the raw_data table.   
+We choose the distribution key and sort keys in a way that will improve the performance of the windowing function in  our `deduplicate.sql` and the different joins that will happen all along the process. The goal of this database design is both, to avoid moving data all over the cluster, and triggering "MERGE JOINS" which are the most performant joins Redshift can do.  
+The `cars.jsonpath` file is needed to map the name of the json fields to the name of the Redshift columns as we can't use uppercase in Redshift column names.
 * `deduplicate.sql` removes the duplicated `unique_id` using a date windowing function
 * `get_insights.sql` crunches the deduplicated data to identify how good of an offer each classified ad is.
 * `unload_to_s3.sql` dumps the content of our final insights table to a csv file in S3. Unfortunately Redshift does not support dumping a table to a json file thus we will have to deal with that ourselves.
@@ -31,11 +32,11 @@ So everything works well, we end up with 851714 unique rows.
 We start by creating a temporary baseline table which contains the average year, price and mileage for each pair `(make, model)`.  
 Then we compare each classified ad from dedup_data to its matching baseline row by joining on `(make, model)`. And for each criteria (year, price and mileage) the classified ad gets attributed a 1 or 0.  
 Finally we some these scores in a final insights table telling us if the classified ad is a (Bad, Average, Interesting or Good) deal.  
-The baseline and scoring tables are temporary tables but if the dataset would grow big and we would be in need of better performance, we could just persist those table and design them in a way that would fasten the joins. As the current dataset is quite small and the job is running in a few seconds, there was no need to do that.
+The baseline and scoring tables are temporary tables but if the dataset would grow big and we would be in need of better performance, we could just persist those tables and design them in a way that would fasten the joins. As the current dataset is quite small and the job is running in a few seconds, there was no need to do that.
 
 
 ## Results
-I have never owned a car myself and I am not interested by cars at all so it is a bit hard for me to judge but the sample results I have checked make sense to me. The quality of the deals identified seems fair or at least it is not a total nonsense.  
+I have never owned a car myself and I am not interested by cars at all so it is a bit hard for me to judge but the sample results I have checked makes sense to me. The quality of the deals identified seems fair or at least it is not a total nonsense.  
 For example look at this brand new (only 100 kms mileage) Opel Zafira costing only 5600 euros.  
 ![alt text](zafira-good-deal.png "GOODE DEAL SPOTTED!")
 I consider investing !
@@ -47,5 +48,5 @@ To make our insights available for our users in real-time I would:
 3. Finally, after some new records were pulled from the stream, there are many things we can do, for example:  
    * send mail to our users (passing through AWS SNS make it very easy for example)  
    * update a fast DB such as a namespaced Redis cache or a DynamoDB using DAX. Or even index them in an Elasticsearch cluster depending on what type of requests we need to run on those data.
-   * send an HTTP post containing the new records to another service that is expecting this kind of update and will lay it out, for instance by updating a webpage or sending a push notification
+   * send an HTTP post containing the new records to another service that is expecting this kind of updates and will lay it out, for instance by updating a webpage or sending a push notification.
 
