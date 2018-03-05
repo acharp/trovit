@@ -54,7 +54,7 @@ from
         -- We coalesce the avg values and the value of the raw because some are null and would bias the scoring.
         -- If, for some of the scoring field, wether the (make, model) is lacking the average value, or the row is lacking a value, this
         -- scoring field gets attributed a 0. This keeps us from pushing wrong information to our users.
-        case when (coalesce(avg_mileage, 0) - coalesce(nullif(mileage, 0), 500000)) > 50000 then 1 else 0 end as mileage_score,
+        case when (coalesce(avg_mileage, 0) - coalesce(nullif(mileage, 0), 800000)) > 50000 then 1 else 0 end as mileage_score,
         case when (coalesce(avg_price, 0.0) - coalesce(nullif(price, 0.0), 100000.00)) > 4000.00 then 1 else 0 end as price_score,
         case when (year - coalesce(avg_year, 3000)) > 3 then 1 else 0 end as year_score
     from
